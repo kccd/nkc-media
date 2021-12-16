@@ -3,6 +3,7 @@ module.exports = {
     maxGetPageScale: 0.5,
     maxGetPageCount: 8
   },
+  useGPU: false,
   communication: {
     serverAddress: '127.0.0.1',
     serverPort: 8976,

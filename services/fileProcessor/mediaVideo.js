@@ -2,7 +2,7 @@ const PATH = require('path')
 const tools = require('../../tools')
 const ff = require('fluent-ffmpeg')
 const {sendMessageToNkc} = require('../../socket')
-
+const {useGPU} = require('../../configs');
 module.exports = async (props) => {
   const {
     cover,
@@ -30,7 +30,7 @@ module.exports = async (props) => {
   const filePath = file.path;//临时目录
   const time = (new Date(toc)).getTime();
 
-  const tempFilesPath = [filePath];
+  const tempFilesPath = [filePath, coverPath];
 
   const func = async () => {
     const {width: videoWidth, height: videoHeight} = await tools.getFileInfo(filePath);
@@ -85,7 +85,7 @@ module.exports = async (props) => {
       },
       outputs
     };
-    await videoProgress(props, true);
+    await videoProgress(props, useGPU);
     const storeData = [];
     const filesInfo = {};
     for(const video of videos) {
@@ -188,7 +188,8 @@ async function videoProgress(props, useGPU) {
 
     const inputHwaccel = useGPU? ['-hwaccel', 'cuda']: [];
     const outputCodec = useGPU? ['-c:v', 'h264_nvenc']: ['-c:v', 'libx264'];
-
+    const hasAudioStream = await tools.hasAudioStream(videoPath);
+    const audioStream = hasAudioStream? ['-map', '0:a']: [];
     let task = ff();
     task.input(videoPath);
     task.inputOptions([
@@ -216,8 +217,7 @@ async function videoProgress(props, useGPU) {
       task.outputOptions([
         '-map',
         outputName,
-        '-map',
-        `0:a`,
+        ...audioStream,
         `-map_metadata`,
         `-1`,
         `-b:v`,
