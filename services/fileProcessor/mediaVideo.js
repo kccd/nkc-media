@@ -33,7 +33,6 @@ module.exports = async (props) => {
   const tempFilesPath = [filePath];
 
   const func = async () => {
-    const t = Date.now();
     const {width: videoWidth, height: videoHeight} = await tools.getFileInfo(filePath);
     const watermarkHeight = ~~Math.min(videoWidth, videoHeight) * (flex/100);
     const watermarkDisabled = (
@@ -123,7 +122,6 @@ module.exports = async (props) => {
       status: true,
       filesInfo
     });
-    console.log(`NEW 耗时：${Date.now() - t}ms`);
   };
 
   func()
@@ -151,7 +149,6 @@ function videoFirstThumbTaker(videoPath,imgPath) {
 // @return 比特率 Kbps
 function getBitrateBySize(width, height, configs, defaultBV) {
   const s =  width * height;
-  console.log({width, height, total: width * height})
   let rate;
   for(const v of configs) {
     const {bv, from, to} = v;
@@ -167,7 +164,6 @@ function getBitrateBySize(width, height, configs, defaultBV) {
 }
 
 async function videoProgress(props, useGPU) {
-  console.log(props);
   return new Promise(async (resolve, reject) => {
     const {
       videoPath,
