@@ -2,7 +2,7 @@ const CommunicationClient = require('./communicationClient.v1');
 const {getPort} = require('./tools');
 const {address: serviceAddress, communication} = require('./configs');
 const realPort = getPort();
-const {serverAddress, serverPort, clientName} = communication;
+const {serverAddress, serverPort, clientName, nkcName} = communication;
 
 const communicationClient = new CommunicationClient({
   serverAddress,
@@ -21,7 +21,7 @@ function getCommunicationClient() {
 function sendMessageToNkc(type, props) {
   const {rid, status, error, filesInfo, vid} = props;
   const communicationClient = getCommunicationClient();
-  communicationClient.sendMessage(communicationConfig.servicesName.nkc, {
+  communicationClient.sendMessage(nkcName, {
     type,
     data: {
       rid,

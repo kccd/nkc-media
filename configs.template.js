@@ -7,7 +7,8 @@ module.exports = {
   communication: {
     serverAddress: '127.0.0.1',
     serverPort: 8976,
-    clientName: 'media'
+    clientName: 'media',
+    nkcName: 'nkc',
   },
   address: '127.0.0.1',
   port: 10283,
