@@ -139,7 +139,6 @@ async function getFileInfo(filePath) {
   } else if(videoExtensions.includes(ext)) {
     try{
       const videoInfo = await getVideoInfo(filePath);
-      console.log({videoInfo});
       height = videoInfo.height;
       width = videoInfo.width;
       duration = videoInfo.duration;
