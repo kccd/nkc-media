@@ -222,8 +222,8 @@ async function videoProgress(props, useGPU) {
         `-1`,
         `-b:v`,
         bitrate,
-        /*'-c:a',
-        'copy',*/
+        '-c:a',
+        'copy',
         ...outputCodec
       ]);
     }
