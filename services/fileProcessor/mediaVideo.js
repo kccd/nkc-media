@@ -2,7 +2,7 @@ const PATH = require('path')
 const tools = require('../../tools')
 const ff = require('fluent-ffmpeg')
 const {sendMessageToNkc} = require('../../socket')
-const {useGPU} = require('../../configs');
+const {encoder} = require('../../configs').ffmpeg;
 
 module.exports = async (props) => {
   const {
@@ -88,7 +88,7 @@ module.exports = async (props) => {
     };
 
 
-    await videoProgress(props, useGPU);
+    await videoProgress(props);
 
     const storeData = [];
     const filesInfo = {};
@@ -167,7 +167,7 @@ function getBitrateBySize(width, height, configs, defaultBV) {
   return rate * 1024;
 }
 
-async function videoProgress(props, useGPU) {
+async function videoProgress(props) {
   return new Promise(async (resolve, reject) => {
     const {
       videoPath,
@@ -190,15 +190,12 @@ async function videoProgress(props, useGPU) {
       filterModifyVideo.push(`${inputName}scale=-2:${height},fps=fps=${fps}${outputName}`);
     }
 
-    const inputHwaccel = useGPU? ['-hwaccel', 'cuda']: [];
-    const outputCodec = useGPU? ['-c:v', 'h264_nvenc']: ['-c:v', 'libx264'];
     const hasAudioStream = await tools.hasAudioStream(videoPath);
     const audioStream = hasAudioStream? ['-map', '0:a']: [];
     let task = ff();
     task.input(videoPath);
     task.inputOptions([
       '-y',
-      ...inputHwaccel,
     ]);
     if(!watermark.disabled) {
       // 打水印
@@ -229,7 +226,8 @@ async function videoProgress(props, useGPU) {
         bitrate,
         '-c:a',
         'copy',
-        ...outputCodec
+        '-c:v',
+        encoder,
       ]);
     }
     task.on('end', resolve);
