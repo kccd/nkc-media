@@ -144,13 +144,16 @@ module.exports = async (props) => {
       });
     })
     .finally(() => {
-      return Promise.all([
+      const tasks = [
         tools.deleteFile(thumbnailPath),
         tools.deleteFile(mediumPath),
         tools.deleteFile(filePath),
-        tools.deleteFile(cover.path),
-        tools.deleteFile(outputPath),
-      ]);
+        tools.deleteFile(cover.path)
+      ];
+      if(outputPath !== filePath) {
+        tasks.push(tools.deleteFile(outputPath));
+      }
+      return Promise.all(tasks);
     })
 }
 
