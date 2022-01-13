@@ -2,9 +2,11 @@ const PATH = require('path');
 const {
   deleteFile,
   getFileInfo,
+  moveFile,
   spawnProcess,
   getFileSize,
-  storeClient
+  storeClient,
+  accessFile
 } = require('../../tools');
 const {sendMessageToNkc} = require('../../socket');
 const fs = require('fs');
@@ -45,7 +47,20 @@ module.exports = async (props) => {
   Promise.resolve()
     .then(() => {
       if(ext === 'pdf') {
-        return hasPassword(filePath);
+        const filePathWithoutPassword = filePath + '.without_password.pdf';
+        return hasPassword(filePath)
+          .then(hasPW => {
+            if(hasPW) {
+              return clearPassword(filePath, filePathWithoutPassword)
+                .then(() => {
+                  return moveFile(filePathWithoutPassword, filePath);
+                })
+                .catch(err => {})
+            }
+          })
+          .then(() => {
+            return hasPassword(filePath)
+          })
       }
     })
     .then(hasPassword => {
@@ -186,6 +201,13 @@ async function createPreviewFDF(path, outputPath) {
   await fsPromises.writeFile(outputPath, newPdfBytes);
 }
 
+async function clearPassword(filePath, targetFilePath) {
+  await spawnProcess(`qpdf`, [
+    '-decrypt',
+    filePath,
+    targetFilePath
+  ]);
+}
 
 /*
 * 判断 PDF 文件是否加密
@@ -193,19 +215,18 @@ async function createPreviewFDF(path, outputPath) {
 * @return {Boolean}
 * */
 async function hasPassword(filePath) {
-  try {
+  if(!await accessFile(filePath)) {
+    throw new Error(`No such file or directory. filePath=${filePath}`);
+  }
+  try{
     await spawnProcess(`qpdf`, [
-      '--show-encryption',
+      '--is-encrypted',
       filePath.split(path.sep).join("/")
     ]);
-  } catch (error) {
-    const message = error.toString().trim();
-    if(message.endsWith("No such file or directory")) {
-      throw error;
-    }
-    return message.endsWith("invalid password");
+    return true
+  } catch(err) {
+    return false
   }
-  return false;
 }
 /*
 * 压缩 PDF 文件
