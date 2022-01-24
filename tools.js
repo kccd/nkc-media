@@ -13,7 +13,7 @@ const os = platform();
 const linux = (os === 'linux');
 
 const imageExtensions = ["jpg", "jpeg", "png", "bmp", "svg", "gif", "webp"];
-const videoExtensions = ["mp4", "mov", "3gp", "avi", 'webm'];
+const videoExtensions = ["mp4", "mov", "3gp", "avi", 'webm', 'mkv', 'flv', 'wmv'];
 const audioExtensions = ["wav", "amr", "mp3", "aac", 'flac'];
 
 const {port} = require("./configs");
