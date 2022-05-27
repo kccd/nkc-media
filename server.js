@@ -1,9 +1,5 @@
-const {
-  address,
-} = require('./configs');
-const {getPort} = require("./tools");
-const realPort = getPort();
-
+const {GetServerConfigs} = require('./comm/modules/configs');
+const {StartBroker} = require('./comm');
 require('colors');
 const http = require('http')
 const koa = require('koa');
@@ -12,7 +8,7 @@ const router = require('./routes');
 const fs = require('fs');
 const path =  require('path');
 const tempPath = path.resolve(__dirname, `./temp`);
-
+const serverConfigs = GetServerConfigs();
 try{
   fs.accessSync(tempPath)
 } catch(err) {
@@ -42,7 +38,12 @@ app.use(body);
 
 const server = http.createServer(app.callback());
 
-server.listen(realPort, address, () => {
-  require('./socket');
-  console.log(`media service is running at ${realPort}`.green);
-});
+StartBroker()
+  .then(() => {
+    server.listen(serverConfigs.port, serverConfigs.host, () => {
+      // require('./socket');
+      console.log(`media service is running at ${serverConfigs.host}:${serverConfigs.port}`.green);
+    });
+  })
+  .catch(console.error);
+

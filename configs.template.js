@@ -14,4 +14,19 @@ module.exports = {
   },
   address: '127.0.0.1',
   port: 10283,
+
+  moleculer: {
+    namespace: "NKC_MESH_PRODUCTION",
+    nodeID: "nkc_media",
+    transporter: "redis://127.0.0.1:6379",
+    registry: {
+      strategy: "Random",
+      discoverer: "Local"
+    },
+    web: {
+      enabled: true,
+      port: 20396,
+      host: "127.0.0.1"
+    }
+  }
 };

@@ -1,39 +1,31 @@
-const CommunicationClient = require('./communicationClient.v1');
-const {getPort} = require('./tools');
-const {address: serviceAddress, communication} = require('./configs');
-const realPort = getPort();
-const {serverAddress, serverPort, clientName, nkcName} = communication;
-
-const communicationClient = new CommunicationClient({
-  serverAddress,
-  serverPort,
-  serviceAddress,
-  serviceId: process.pid,
-  servicePort: realPort,
-  serviceName: clientName
-});
-
-function getCommunicationClient() {
-  return communicationClient;
-}
+const {BrokerCall, ServiceActionNames} = require('./comm/modules/call');
 
 //媒体服务通知NKC服务
 function sendMessageToNkc(type, props) {
-  const {rid, status, error, filesInfo, vid} = props;
-  const communicationClient = getCommunicationClient();
-  communicationClient.sendMessage(nkcName, {
-    type,
-    data: {
-      rid,
-      vid,
-      status,
-      error,
-      filesInfo
-    },
-  });
+  const {rid = '', status = false, error = '', filesInfo = {}, vid = ''} = props;
+  Promise.resolve()
+    .then(() => {
+      if(type === 'resourceStatus') {
+        return BrokerCall(ServiceActionNames.v1_nkc_set_resource_status, {
+          rid,
+          status,
+          error,
+          filesInfo
+        });
+      } else {
+        return BrokerCall(ServiceActionNames.v1_nkc_set_verified_status, {
+          vid,
+          status,
+          error,
+          filesInfo
+        });
+      }
+    })
+    .catch(err => {
+      console.error(err);
+    });
 }
 
 module.exports = {
-  getCommunicationClient,
   sendMessageToNkc
 };
