@@ -24,10 +24,13 @@ module.exports = async (props) => {
     });
     const fileInfo = await getFileInfo(filePath);
     fileInfo.name = filenamePath;
+    const filesInfo = {
+      def: fileInfo
+    };
     await sendMessageToNkc('verifiedUploadState', {
       vid,
       status: true,
-      fileInfo,
+      filesInfo,
     });
   }
 
