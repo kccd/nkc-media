@@ -366,6 +366,10 @@ async function createOtherSizeVideo(inputFile, outputFile, props) {
   });
 }
 
+async function copyFile(filePath, targetFilePath) {
+  await fsPromises.copyFile(filePath, targetFilePath)
+}
+
 /*
 * 获取服务暴露的端口
 * */
@@ -385,6 +389,7 @@ module.exports = {
   getFileInfo,
   hasAudioStream,
   getFileSize,
+  copyFile,
   spawnProcess,
   storeClient,
   imageAutoOrient,
