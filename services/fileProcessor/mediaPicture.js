@@ -26,7 +26,10 @@ const PictureMaxSize = {
     width: 150,
     height: 150,
   }
-}
+};
+
+// 图片最大高度不超过10万像素
+const PictureMaxHeight = 10 * 10000;
 
 
 module.exports = async (props) => {
@@ -99,25 +102,27 @@ module.exports = async (props) => {
     //获取图片尺寸
     const originFileInfo = await tools.getFileInfo(filePath);
 
-    const isVertical = originFileInfo.width < originFileInfo.height;
-
-    // 在这里将图片的尺寸调整到8K以下
-    if(isVertical) {
-      // 纵向图片
-      if(originFileInfo.height > PictureMaxSize.lg.width) {
-        await imageNarrow(filePath, filePath,`${PictureMaxSize.lg.height}x${PictureMaxSize.lg.width}\>`);
+    // 判断图片宽度有没有超过 8K
+    if(originFileInfo.width > PictureMaxSize.lg.width) {
+      // 宽度超过了 8K，需要将宽度调整到 8K
+      // 判断当宽度调整为 8K 时，高度有没有超过 10 万像素
+      // 如果超过了，则根据高度 10 万像素重新计算宽度
+      let targetWidth = PictureMaxSize.lg.width;
+      let targetHeight = targetWidth * originFileInfo.height / originFileInfo.width;
+      if(targetHeight > PictureMaxHeight) {
+        targetHeight = PictureMaxHeight;
+        targetWidth = targetHeight * originFileInfo.width / originFileInfo.height;
       }
-    } else {
-      // 横向图片
-      if(originFileInfo.width > PictureMaxSize.lg.width) {
-        await imageNarrow(filePath, filePath, `${PictureMaxSize.lg.width}x${PictureMaxSize.lg.height}\>`);
-      }
+      await imageNarrow(filePath, filePath, `${targetWidth}x${targetHeight}\>`);
     }
 
     // 重新获取图片的尺寸以及文件大小
     const {width, height} = await tools.getFileInfo(filePath);
 
-    // 在这里给图片添加水印
+    // 满足一下条件即可为图片添加水印
+    // 图片尺寸超过设定值
+    // 后台管理、用户设置均开启了打水印
+    // 非 GIF 图片
     if(
       width >= minWidth &&
       height >= minHeight &&
@@ -133,40 +138,21 @@ module.exports = async (props) => {
     // 肯定需要生成缩略图
     await imageNarrow(filePath, thumbnailPath, `${PictureMaxSize.sm.width}x${PictureMaxSize.sm.height}\>`);
 
-    // 判断原图尺寸是否超过md，超过则生成md
-    if(isVertical && height > PictureMaxSize.md.width) {
-      await imageNarrow(outputPath, mediumPath, `${PictureMaxSize.md.height}x${PictureMaxSize.md.width}\>`);
-    }
-    if(!isVertical && width > PictureMaxSize.md.width) {
+    // 如果图片宽度超过了中等尺度，则生成中图
+    if(width > PictureMaxSize.md.width) {
       await imageNarrow(outputPath, mediumPath, `${PictureMaxSize.md.width}x${PictureMaxSize.md.height}\>`);
     }
 
-    // 生成normal图片
-    // 如果原图尺寸没有超过normal的尺寸，则复制outputPath为normal图片
-    // 如果原图尺寸超过normal的尺寸，则需要重新根据原图生成normal图
-    if(isVertical) {
-      // 纵向
-      if(height > PictureMaxSize.normal.width) {
-        // 高度超过了normal的最大高度
-        await imageNarrow(outputPath, normalPath, `${PictureMaxSize.normal.height}x${PictureMaxSize.normal.width}\>`);
-      } else {
-        await tools.copyFile(outputPath, normalPath);
-      }
+    // 如果图片宽度超过了默认图宽度，则将生成默认图
+    // 如果未超过则直接复制原图作为默认图
+    if(width > PictureMaxSize.normal.width) {
+      await imageNarrow(outputPath, normalPath, `${PictureMaxSize.normal.width}x${PictureMaxSize.normal.height}\>`);
     } else {
-      // 横向
-      if(width > PictureMaxSize.normal.width) {
-        // 宽度超过了normal的最大宽度
-        await imageNarrow(outputPath, normalPath, `${PictureMaxSize.normal.width}x${PictureMaxSize.normal.height}\>`);
-      } else {
-        await tools.copyFile(outputPath, normalPath);
-      }
+      await tools.copyFile(outputPath, normalPath);
     }
 
-    // 生成lg图片
-    if(
-      (isVertical && height > PictureMaxSize.normal.width) ||
-      (!isVertical && width > PictureMaxSize.normal.width)
-    ) {
+    // 如果图片宽度超过了默认图宽度，则还需要生成一张大图
+    if(width > PictureMaxSize.normal.width) {
       await tools.copyFile(outputPath, lgPath);
     }
 
@@ -275,9 +261,9 @@ function saveffmpeg (filePath, cover, waterGravity, output, flex, transparency) 
 // 去除图片附加信息并调整大小
 const imageNarrow = (path, outputPath, size) => {
   if(linux) {
-    return spawnProcess('convert', [path, '-resize', size, '-strip', outputPath])
+    return spawnProcess('convert', [path, '-coalesce', '-resize', size, '-strip', '-deconstruct', outputPath])
   } else {
-    return spawnProcess('magick', ['convert', path, '-resize', size, '-strip', outputPath])
+    return spawnProcess('magick', ['convert', path, '-coalesce', '-resize', size, '-strip', '-deconstruct', outputPath])
   }
 }
 
