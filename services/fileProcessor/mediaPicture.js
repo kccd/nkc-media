@@ -278,6 +278,7 @@ const ffmpegImageFilter = async (inputPath, outputPath, filters) => {
     [
       ...['-i', inputPath],                                              /* 输入 */
       ...['-filter_complex', filters.join(";")],                         /* 滤镜表达式 */
+      '-q', '0',
       '-y',                                                              /* 覆盖输出 */
       outputPath                                                         /* 输出 */
     ]);
