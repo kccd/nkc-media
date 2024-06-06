@@ -4,7 +4,38 @@ const ff = require('fluent-ffmpeg')
 const {sendMessageToNkc} = require('../../socket')
 const {encoder} = require('../../configs').ffmpeg;
 
+const {maxConcurrentVCount} = require('../../configs');
+const maxConcurrent = maxConcurrentVCount || 5;
+let pendingRequests = [];
+let activeRequests = 0;
 module.exports = async (props) => {
+  // 将请求参数加入待处理队列
+  pendingRequests.push({...props});
+  // 如果当前处理数量未达到最大并发数,则立即处理请求
+  if (activeRequests < maxConcurrent) {
+    await processNextRequest();
+  }
+}
+async function processNextRequest(){
+  // 如果没有待处理请求,则直接返回
+  if (pendingRequests.length === 0) return;
+
+  // 从待处理队列中取出下一个请求
+  const props = pendingRequests.shift();
+
+  try {
+    activeRequests++;
+    // 调用视频上传方法
+    await handleVideoUpload(props);
+  } catch (error) {
+    console.error('Error uploading video:', error);
+  } finally {
+    activeRequests--;
+    // 尝试处理下一个待处理请求
+    await processNextRequest();
+  }
+};
+async function handleVideoUpload(props){
   const {
     cover,
     file,
@@ -128,7 +159,7 @@ module.exports = async (props) => {
     });
   };
 
-  func()
+  await func()
     .catch((err) => {
       console.log(err);
       return sendMessageToNkc('resourceStatus', {

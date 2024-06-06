@@ -28,5 +28,6 @@ module.exports = {
       port: 20396,
       host: "127.0.0.1"
     }
-  }
+  },
+  maxConcurrentVCount: 5
 };
