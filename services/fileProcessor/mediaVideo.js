@@ -1,4 +1,5 @@
 const PATH = require('path')
+const fs = require('fs');
 const tools = require('../../tools')
 const ff = require('fluent-ffmpeg')
 const {sendMessageToNkc} = require('../../socket')
@@ -8,32 +9,39 @@ const {maxConcurrentVCount} = require('../../configs');
 const maxConcurrent = maxConcurrentVCount || 5;
 let pendingRequests = [];
 let activeRequests = 0;
+// 从临时文件中读取之前保存的数据
+const savedData = readTempJSON();
+savedData.forEach((props) => {
+  pendingRequests.push({ ...props });
+  if (activeRequests < maxConcurrent) {
+    processNextRequest();
+  }
+});
 module.exports = async (props) => {
   // 将请求参数加入待处理队列
   pendingRequests.push({...props});
+  addTempJSON({...props});
   // 如果当前处理数量未达到最大并发数,则立即处理请求
   if (activeRequests < maxConcurrent) {
-    await processNextRequest();
+    processNextRequest();
   }
 }
-async function processNextRequest(){
+function processNextRequest(){
   // 如果没有待处理请求,则直接返回
   if (pendingRequests.length === 0) return;
-
   // 从待处理队列中取出下一个请求
   const props = pendingRequests.shift();
-
-  try {
-    activeRequests++;
-    // 调用视频上传方法
-    await handleVideoUpload(props);
-  } catch (error) {
-    console.error('Error uploading video:', error);
-  } finally {
-    activeRequests--;
-    // 尝试处理下一个待处理请求
-    await processNextRequest();
-  }
+  activeRequests++;
+  // 调用视频上传方法
+  return handleVideoUpload(props)
+        .then(() => {
+          delTempJSON(props.data.rid);
+        })
+        .finally(() => {
+          activeRequests--;
+          // 尝试处理下一个待处理请求
+          processNextRequest();
+        });
 };
 async function handleVideoUpload(props){
   const {
@@ -290,3 +298,56 @@ const gravityToPositionMap = {
     y: "(H-h)/2"
   }
 };
+function readTempJSON() {
+  const rootDir = process.cwd();
+  const filePath = PATH.join(rootDir, "tempVideos.json");
+
+  try {
+    // 读取 JSON 文件
+    const fileData = fs.readFileSync(filePath, "utf8");
+    const jsonData = JSON.parse(fileData);
+
+    // 检查读取的数据是否为对象,且 data 属性是数组
+    if (typeof jsonData !== "object" || !Array.isArray(jsonData.data)) {
+      throw new Error("Invalid JSON data format");
+    }
+
+    return jsonData.data;
+  } catch (err) {
+    // 如果文件不存在,返回空数组
+    if (err.code === "ENOENT") {
+      return [];
+    } else {
+      console.error("Error reading JSON file:", err);
+      throw err;
+    }
+  }
+}
+
+function writeTempJSON(data) {
+  // 检查输入数据是否为数组
+  if (!Array.isArray(data)) {
+    throw new Error("Input data must be an array");
+  }
+
+  const rootDir = process.cwd();
+  const filePath = PATH.join(rootDir, "tempVideos.json");
+
+  try {
+    // 写入更新后的数据
+    fs.writeFileSync(filePath, JSON.stringify({ data }, null, 2));
+  } catch (err) {
+    console.error("Error writing JSON file:", err);
+    throw err;
+  }
+}
+function addTempJSON(props) {
+  const tempData = readTempJSON();
+  tempData.push({...props});
+  writeTempJSON(JSON.parse(JSON.stringify([...tempData])));
+}
+function delTempJSON(rid) {
+  const tempData = readTempJSON();
+  tempData.splice(tempData.findIndex(item=>item.data.rid === rid),1);
+  writeTempJSON(JSON.parse(JSON.stringify([...tempData])));
+}
