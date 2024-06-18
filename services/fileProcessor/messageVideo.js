@@ -74,5 +74,5 @@ function videoToMP4(filePath, outputPath) {
 }
 
 function videoToCover(filePath, coverPath) {
-  return spawnProcess('ffmpeg',['-i',filePath, '-ss', '1', '-vframes' ,'1', coverPath])
+  return spawnProcess('ffmpeg',['-i',filePath, '-ss', '1', '-vframes' ,'1', '-y',coverPath])
 }

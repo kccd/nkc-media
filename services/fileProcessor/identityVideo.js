@@ -38,7 +38,7 @@ module.exports = async (props) => {
     });
   }
 
-  func()
+  await func()
     .catch(err => {
       //处理成功修改该条数据的处理状态
       sendMessageToNkc('verifiedUploadState', {
