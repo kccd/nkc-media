@@ -29,5 +29,10 @@ module.exports = {
       host: "127.0.0.1"
     }
   },
-  maxConcurrentVCount: 5
+  queue: {
+    picture: 10,
+    audio: 2,
+    video: 2,
+    attachment: 10,
+  },
 };

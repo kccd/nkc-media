@@ -8,8 +8,11 @@
   },
   "author": "pengxiguaa",
   "dependencies": {
+    "@bull-board/api": "^6.7.8",
+    "@bull-board/koa": "^6.7.8",
     "address": "^1.2.0",
     "axios": "^0.21.1",
+    "bull": "^4.16.5",
     "colors": "^1.4.0",
     "commander": "^9.2.0",
     "easyimage": "^3.1.1",

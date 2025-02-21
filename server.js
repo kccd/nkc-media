@@ -9,6 +9,9 @@ const fs = require('fs');
 const path =  require('path');
 const tempPath = path.resolve(__dirname, `./temp`);
 const serverConfigs = GetServerConfigs();
+
+
+
 try{
   fs.accessSync(tempPath)
 } catch(err) {
@@ -18,8 +21,11 @@ try{
 const body = require('./middlewares/body');
 const error = require('./middlewares/error');
 const init = require('./middlewares/init');
+const {queueModule} = require("./modules/queue");
 
 const app = new koa();
+
+queueModule.initBullBoard(app);
 
 app.use(koaBody({
   multipart: true,
@@ -42,7 +48,8 @@ StartBroker()
   .then(() => {
     server.listen(serverConfigs.port, serverConfigs.host, () => {
       // require('./socket');
-      console.log(`media service is running at ${serverConfigs.host}:${serverConfigs.port}`.green);
+      console.log(`Media service is running at ${serverConfigs.host}:${serverConfigs.port}`.green);
+      console.log(`Queue UI: http://${serverConfigs.host}:${serverConfigs.port}/admin/queues`.green);
     });
   })
   .catch(console.error);

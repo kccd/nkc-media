@@ -19,7 +19,7 @@ module.exports = async (props) => {
   const path = PATH.join(mediaPath, timePath, filenamePath);
   const time = (new Date(toc)).getTime();
   const filesInfo = {};
-  audioToMP3(filePath, targetFilePath)
+  return audioToMP3(filePath, targetFilePath)
     .then(() => {
       return storeClient(storeUrl, {
         filePath: targetFilePath,

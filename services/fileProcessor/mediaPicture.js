@@ -207,7 +207,7 @@ module.exports = async (props) => {
       filesInfo
     });
   }
-  func()
+  return func()
     .catch(err => {
       console.log(err);
       return sendMessageToNkc('resourceStatus', {
@@ -310,11 +310,12 @@ async function addImageTextWaterMaskForImage(op) {
   const fontSize = padHeight - 10;
   const gap = ~~(logoWidth * 0.1); /* logo和文字之间和间隔 */
   // let padWidth = logoWidth + gap;
+  const fontPath = PATH.resolve(__dirname, '../../public/NotoSansHans-Medium.otf').replace(/\\/g, "/").replace(":", "\\:");
   image = image.replace(/\\/g, "/").replace(":", "\\:");
   return ffmpegImageFilter(input, output, [
     `movie='${image}'[logo]`,
     `[logo]scale=${logoWidth}:${logoHeight}[image]`,
-    `[image]drawtext=x=${logoWidth + gap}:y=${logoHeight}/2:text='':fontsize=${fontSize}:fontcolor=fcfcfc:fontfile=':shadowcolor=b1b1b1:shadowx=1:shadowy=1', lut=a=val*${transparency}[watermask]`,
+    `[image]drawtext=x=${logoWidth + gap}:y=${logoHeight}/2:text='':fontsize=${fontSize}:fontcolor=fcfcfc:fontfile=${fontPath}:shadowcolor=b1b1b1:shadowx=1:shadowy=1, lut=a=val*${transparency}[watermask]`,
     `[0:v][watermask]overlay=${position.x}:${position.y}`
   ], additionOptions)
 }

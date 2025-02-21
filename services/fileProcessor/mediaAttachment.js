@@ -44,7 +44,7 @@ module.exports = async (props) => {
 
   const filesInfo = {};
 
-  Promise.resolve()
+  return Promise.resolve()
     .then(() => {
       if(ext === 'pdf') {
         const filePathWithoutPassword = filePath + '.without_password.pdf';
