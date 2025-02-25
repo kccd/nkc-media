@@ -14,38 +14,44 @@ module.exports = async (ctx, next) => {
     storeUrl
   };
 
+  let job;
+
   switch(type) {
     case 'mediaPicture':
     case 'identityPictureA':
     case 'identityPictureB':
     case 'attachment':
     case 'messageImage': {
-      await queueModule.pictureQueue.add(jobData);
+      job = await queueModule.pictureQueue.add(jobData);
       break;
     }
 
     case 'mediaAudio':
     case 'messageVoice':
     case 'messageAudio': {
-      await queueModule.audioQueue.add(jobData);
+      job = await queueModule.audioQueue.add(jobData);
       break;
     }
 
     case 'mediaVideo':
     case 'messageVideo':
     case 'identityVideo': {
-      await queueModule.videoQueue.add(jobData);
+      job = await queueModule.videoQueue.add(jobData);
       break;
     }
 
     case 'mediaAttachment':
     case 'messageFile': {
-      await queueModule.attachmentQueue.add(jobData);
+      job = await queueModule.attachmentQueue.add(jobData);
       break;
     }
     default: {
       throw new Error(`Unsupported media type ${type}`);
     }
+  }
+
+  if(job) {
+    ctx.data.files = await job.finished();
   }
   await next();
 }
