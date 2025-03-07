@@ -224,9 +224,13 @@ module.exports = async (props) => {
         lgPath,
         normalPath,
         filePath,
-        cover.path,
         outputPath
       ];
+      if(cover && cover.path) {
+        // 如果用户购买了免打水印服务
+        // 则 cover 对象为 undefined
+        filePaths.push(cover.path);
+      }
 
       for(const item of filePaths) {
         try{
