@@ -17,7 +17,24 @@ module.exports = async (ctx, next) => {
   let job;
 
   switch(type) {
-    case 'mediaPicture':
+    case 'mediaPicture': {
+      await queueModule.pictureQueue.add(jobData);
+      break;
+    }
+    case 'mediaVideo': {
+      await queueModule.videoQueue.add(jobData);
+      break;
+    }
+    case 'mediaAudio': {
+      await queueModule.audioQueue.add(jobData);
+      break;
+    }
+    case 'mediaAttachment': {
+      await queueModule.attachmentQueue.add(jobData);
+      break;
+    }
+
+
     case 'identityPictureA':
     case 'identityPictureB':
     case 'attachment':
@@ -26,21 +43,18 @@ module.exports = async (ctx, next) => {
       break;
     }
 
-    case 'mediaAudio':
     case 'messageVoice':
     case 'messageAudio': {
       job = await queueModule.audioQueue.add(jobData);
       break;
     }
 
-    case 'mediaVideo':
     case 'messageVideo':
     case 'identityVideo': {
       job = await queueModule.videoQueue.add(jobData);
       break;
     }
 
-    case 'mediaAttachment':
     case 'messageFile': {
       job = await queueModule.attachmentQueue.add(jobData);
       break;
