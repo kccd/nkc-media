@@ -43,6 +43,8 @@ app.use(router.routes());
 app.use(body);
 
 const server = http.createServer(app.callback());
+server.requestTimeout = 20 * 60 * 1000;
+server.headersTimeout = 20 * 60 * 1000 + 5000;
 
 StartBroker()
   .then(() => {

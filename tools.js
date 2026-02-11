@@ -220,6 +220,7 @@ async function storeClient(url, files = []) {
   if(!Array.isArray(files)) {
     files = [files];
   }
+  const timeoutMs = 20 * 60 * 1000;
   const formData = new FormData();
   const filesInfo = {};
   for(let i = 0; i < files.length; i++) {
@@ -237,6 +238,7 @@ async function storeClient(url, files = []) {
       url,
       method: 'POST',
       maxBodyLength: Infinity,
+      timeout: timeoutMs,
       data: formData,
       headers: formData.getHeaders()
     })
