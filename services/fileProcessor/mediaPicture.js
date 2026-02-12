@@ -100,7 +100,7 @@ module.exports = async (props) => {
     await tools.imageAutoOrient(filePath);
     //获取文件所在目录
     //获取图片尺寸
-    const originFileInfo = await tools.getFileInfo(filePath);
+    const originFileInfo = await tools.getFileInfo(filePath, 'picture');
 
     // 判断图片宽度有没有超过 8K
     if(originFileInfo.width > PictureMaxSize.lg.width) {
@@ -117,7 +117,7 @@ module.exports = async (props) => {
     }
 
     // 重新获取图片的尺寸以及文件大小
-    const {width, height} = await tools.getFileInfo(filePath);
+    const {width, height} = await tools.getFileInfo(filePath, 'picture');
 
     // 满足一下条件即可为图片添加水印
     // 图片尺寸超过设定值
@@ -162,7 +162,7 @@ module.exports = async (props) => {
         path: lgStorePath,
         time,
       });
-      const lgInfo = await tools.getFileInfo(lgPath);
+      const lgInfo = await tools.getFileInfo(lgPath, 'picture');
       lgInfo.name = lgFileName;
       filesInfo.lg = lgInfo;
     }
@@ -173,7 +173,7 @@ module.exports = async (props) => {
         path: normalStorePath,
         time,
       });
-      const defInfo = await tools.getFileInfo(normalPath);
+      const defInfo = await tools.getFileInfo(normalPath, 'picture');
       defInfo.name = normalFileName;
       filesInfo.def = defInfo;
     }
@@ -184,7 +184,7 @@ module.exports = async (props) => {
         path: smStorePath,
         time,
       });
-      const smInfo = await tools.getFileInfo(thumbnailPath);
+      const smInfo = await tools.getFileInfo(thumbnailPath, 'picture');
       smInfo.name = smFileName;
       filesInfo.sm = smInfo;
     }
@@ -195,7 +195,7 @@ module.exports = async (props) => {
         path: mdStorePath,
         time,
       });
-      const mdInfo = await tools.getFileInfo(mediumPath);
+      const mdInfo = await tools.getFileInfo(mediumPath, 'picture');
       mdInfo.name = mdFileName;
       filesInfo.md = mdInfo;
     }
@@ -304,8 +304,8 @@ async function addImageTextWaterMaskForImage(op) {
     transparency = 1,
     additionOptions,
   } = op;
-  const {height: imageHeight, width: imageWidth} = await tools.getFileInfo(input);
-  const {size} = await tools.getFileInfo(image);
+  const {height: imageHeight, width: imageWidth} = await tools.getFileInfo(input, 'picture');
+  const {size} = await tools.getFileInfo(image, 'picture');
   const logoSize = size;
   let padHeight = ~~((imageHeight > imageWidth? imageWidth: imageHeight) * (flex/100));
   // let logoHeight = padHeight - 1;

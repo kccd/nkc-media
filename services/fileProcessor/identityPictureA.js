@@ -22,7 +22,7 @@ module.exports = async (props) => {
       path,
       time
     });
-    const fileInfo = await getFileInfo(filePath);
+    const fileInfo = await getFileInfo(filePath, 'picture');
     fileInfo.name = filenamePath;
     const filesInfo = {
       def: fileInfo

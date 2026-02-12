@@ -45,9 +45,9 @@ module.exports = async (props) => {
     }
   ];
   await storeClient(storeUrl, storeData);
-  const videoFileInfo = await getFileInfo(targetFilePath);
+  const videoFileInfo = await getFileInfo(targetFilePath, 'video');
   videoFileInfo.name = filenamePath;
-  const coverFileInfo = await getFileInfo(coverFilePath);
+  const coverFileInfo = await getFileInfo(coverFilePath, 'picture');
   coverFileInfo.name = coverFilenamePath;
   await deleteFile(filePath);
   await deleteFile(targetFilePath);

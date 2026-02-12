@@ -34,7 +34,7 @@ module.exports = async (props) => {
   const tempFilesPath = [filePath, coverPath];
 
   const func = async () => {
-    const {width: videoWidth, height: videoHeight} = await tools.getFileInfo(filePath);
+    const {width: videoWidth, height: videoHeight} = await tools.getFileInfo(filePath, 'video');
     const watermarkHeight = ~~Math.min(videoWidth, videoHeight) * (flex/100);
     const watermarkDisabled = (
       !cover ||
@@ -99,7 +99,7 @@ module.exports = async (props) => {
         path: storePath,
         time,
       });
-      const fileInfo = await tools.getFileInfo(localPath);
+      const fileInfo = await tools.getFileInfo(localPath, 'video');
       fileInfo.name = filename;
       filesInfo[type] = fileInfo;
     }
@@ -116,7 +116,7 @@ module.exports = async (props) => {
       path: videoCoverStorePath,
       time,
     });
-    const fileInfo = await tools.getFileInfo(videoCoverLocalPath);
+    const fileInfo = await tools.getFileInfo(videoCoverLocalPath, 'picture');
     fileInfo.name = videoCoverName;
     filesInfo[coverType] = fileInfo;
 

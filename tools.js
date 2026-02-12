@@ -106,7 +106,7 @@ async function getFileSize(filePath) {
 *   @param {Number} width 视频、图片宽
 *   @param {Number} duration 音视频时长 秒
 * */
-async function getFileInfo(filePath) {
+async function getFileInfo(filePath, mediaType) {
   const name = PATH.basename(filePath);
   const ext = PATH.extname(filePath).replace('.', '').toLowerCase();
   const hash = await getFileMD5(filePath);
@@ -128,7 +128,7 @@ async function getFileInfo(filePath) {
   let width = 0;
   let duration = 0;
 
-  if(imageExtensions.includes(ext)) {
+  if(mediaType === 'picture') {
     try{
       const imageInfo = await getImageInfo(filePath);
       height = imageInfo.height;
@@ -136,7 +136,7 @@ async function getFileInfo(filePath) {
     } catch(err) {
       console.log(err);
     }
-  } else if(videoExtensions.includes(ext)) {
+  } else if(mediaType === 'video') {
     try{
       const videoInfo = await getVideoInfo(filePath);
       height = videoInfo.height;
@@ -145,7 +145,7 @@ async function getFileInfo(filePath) {
     } catch(err) {
       console.log(err);
     }
-  } else if(audioExtensions.includes(ext)) {
+  } else if(mediaType === 'audio') {
     try {
       const audioInfo = await getAudioInfo(filePath);
       duration = audioInfo.duration;
@@ -157,7 +157,6 @@ async function getFileInfo(filePath) {
   fileInfo.height = height;
   fileInfo.width = width;
   fileInfo.duration = duration;
-
   return fileInfo;
 }
 

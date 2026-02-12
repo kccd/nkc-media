@@ -31,7 +31,7 @@ module.exports = async (props) => {
     time,
     filePath: targetFilePath
   });
-  const fileInfo = await getFileInfo(targetFilePath);
+  const fileInfo = await getFileInfo(targetFilePath, 'audio');
   fileInfo.name = filenamePath;
   await deleteFile(filePath);
   await deleteFile(targetFilePath);

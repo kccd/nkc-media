@@ -28,7 +28,7 @@ module.exports = async (props) => {
       });
     })
     .then(() => {
-      return getFileInfo(targetFilePath);
+      return getFileInfo(targetFilePath, 'audio');
     })
     .then(fileInfo => {
       fileInfo.name = filenamePath;

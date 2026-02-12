@@ -44,9 +44,9 @@ module.exports = async (props) => {
     quality: 90,
   });
   await storeClient(storeUrl, storeData);
-  const fileInfo = await getFileInfo(filePath);
+  const fileInfo = await getFileInfo(filePath, 'picture');
   fileInfo.name = filenamePath;
-  const smFileInfo = await getFileInfo(targetSMFilePath);
+  const smFileInfo = await getFileInfo(targetSMFilePath, 'picture');
   smFileInfo.name = smFilenamePath;
   const filesInfo = {
     def: fileInfo,

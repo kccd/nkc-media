@@ -26,7 +26,7 @@ module.exports = async (props) => {
       path,
       time
     });
-    const fileInfo = await getFileInfo(targetFilePath);
+    const fileInfo = await getFileInfo(targetFilePath, 'video');
     fileInfo.name = filenamePath;
     const filesInfo = {
       def: fileInfo

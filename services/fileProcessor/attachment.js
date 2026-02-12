@@ -45,7 +45,7 @@ module.exports = async (props) => {
       path,
       time
     });
-    const fileInfo = await getFileInfo(targetFilePath);
+    const fileInfo = await getFileInfo(targetFilePath, 'picture');
     fileInfo.name = name;
     filesInfo[type] = fileInfo;
   }
