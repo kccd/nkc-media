@@ -1,37 +1,35 @@
 const fileProcessor = require("../services/fileProcessor");
-const queueConfig = require('../configs.js').queue;
+const queueConfig = require("../configs.js").queue;
 
-const {KoaAdapter} = require("@bull-board/koa");
-const {createBullBoard} = require("@bull-board/api");
-const { BullAdapter } = require('@bull-board/api/bullAdapter');
+const { KoaAdapter } = require("@bull-board/koa");
+const { createBullBoard } = require("@bull-board/api");
+const { BullAdapter } = require("@bull-board/api/bullAdapter");
 
 const Bull = require("bull");
-const redisUrl = require('../configs.js').moleculer.transporter
+const redisUrl = require("../configs.js").queue.redisUrl;
+const namespace = require("../configs.js").queue.namespace;
+
 class QueueModule {
-  pictureQueue = this.newQueue('picture');
-  audioQueue = this.newQueue('audio');
-  videoQueue = this.newQueue('video');
-  attachmentQueue = this.newQueue('attachment');
+  pictureQueue = this.newQueue(`${namespace}:picture`);
+  audioQueue = this.newQueue(`${namespace}:audio`);
+  videoQueue = this.newQueue(`${namespace}:video`);
+  attachmentQueue = this.newQueue(`${namespace}:attachment`);
   constructor() {
     const handle = async (job) => {
-      const {
-        type,
-        file,
-        cover,
-        data,
-        storeUrl
-      } = job.data;
+      const { type, file, cover, data, storeUrl } = job.data;
       await fileProcessor[type]({
         file,
         cover,
         data,
         storeUrl,
       });
-    }
+    };
     this.pictureQueue.process(queueConfig.picture, handle).catch(console.error);
     this.audioQueue.process(queueConfig.audio, handle).catch(console.error);
     this.videoQueue.process(queueConfig.video, handle).catch(console.error);
-    this.attachmentQueue.process(queueConfig.attachment, handle).catch(console.error);
+    this.attachmentQueue
+      .process(queueConfig.attachment, handle)
+      .catch(console.error);
   }
 
   newQueue(type) {
@@ -48,8 +46,8 @@ class QueueModule {
           max: 1000,
           duration: 5000,
         },
-      }
-    )
+      },
+    );
   }
 
   initBullBoard(app) {
@@ -62,16 +60,16 @@ class QueueModule {
         this.audioQueue,
         this.videoQueue,
         this.attachmentQueue,
-      ].map(q => new BullAdapter(q)),
+      ].map((q) => new BullAdapter(q)),
       serverAdapter: serverAdapter,
     });
 
     // 注册管理界面路由
-    serverAdapter.setBasePath('/admin/queues');
+    serverAdapter.setBasePath("/admin/queues");
     app.use(serverAdapter.registerPlugin());
   }
 }
 
 module.exports = {
   queueModule: new QueueModule(),
-}
+};
