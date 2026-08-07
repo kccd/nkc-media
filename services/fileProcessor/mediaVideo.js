@@ -190,8 +190,9 @@ async function videoProgress(props) {
       filterModifyVideo.push(`${inputName}scale=-2:${height},fps=fps=${fps}${outputName}`);
     }
 
-    const hasAudioStream = await tools.hasAudioStream(videoPath);
-    const audioStream = hasAudioStream? ['-map', '0:a']: [];
+    const audioStreamIndex = await tools.getFirstDecodableAudioIndex(videoPath);
+    // 只映射第一个可解码音轨，避免把无法写入 mp4 的未知音轨（如 iPhone 空间音频）一并拷贝
+    const audioStream = audioStreamIndex >= 0? ['-map', `0:a:${audioStreamIndex}`]: [];
     let task = ff();
     task.input(videoPath);
     task.inputOptions([

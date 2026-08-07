@@ -172,13 +172,24 @@ async function accessFile(targetPath) {
   }
 }
 
-async function hasAudioStream(videoFilePath) {
+/*
+* 获取视频中第一个可解码音轨的序号（音轨序号从 0 开始，可直接用于 -map 0:a:<序号>）
+* 部分 MOV 文件（如 iPhone 拍摄的视频）会携带 ffmpeg 无法解码的附加音轨
+* （如苹果空间音频 apac），这类音轨无法写入 mp4 容器，需要跳过。
+* @param {String} videoFilePath 视频文件路径
+* @return {Number} 第一个可解码音轨的序号，不存在时返回 -1
+* */
+async function getFirstDecodableAudioIndex(videoFilePath) {
   return new Promise((resolve, reject) => {
     ff.ffprobe(videoFilePath, (err, metadata) => {
       if(err) return reject(err);
       const {streams} = metadata;
-      const audioInfo = streams.filter(stream => stream["codec_type"] === "audio").shift();
-      resolve(!!audioInfo);
+      const audioStreams = streams.filter(stream => stream["codec_type"] === "audio");
+      const index = audioStreams.findIndex(stream => {
+        const codec = stream["codec_name"];
+        return !!codec && codec !== "unknown" && codec !== "none";
+      });
+      resolve(index);
     });
   })
 }
@@ -388,7 +399,7 @@ module.exports = {
   getVideoInfo,
   getAudioInfo,
   getFileInfo,
-  hasAudioStream,
+  getFirstDecodableAudioIndex,
   getFileSize,
   copyFile,
   spawnProcess,
