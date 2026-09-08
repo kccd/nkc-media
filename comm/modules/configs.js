@@ -9,8 +9,8 @@ function GetMoleculerConfigs() {
 
 function GetServerConfigs() {
   return {
-    host: argsHost || commConfig.address,
-    port: argsPort || commConfig.port
+    host: argsHost ?? commConfig.address,
+    port: argsPort ?? commConfig.port
   }
 }
 

@@ -11,6 +11,12 @@ NKC 媒体处理组件。可处理图片、音视频、PDF文档等。
 4. 在项目根目录创建配置文件 `configs.js`（内容参考 configs.template.js）;
 5. 执行 `npm start` 启动项目；
 
+也可以通过命令行参数指定服务监听地址和端口，命令行参数优先级最高：
+
+```bash
+npm start -- --host 0.0.0.0 --port 8080
+```
+
 [1]: https://imagemagick.org/
 [2]: https://ffmpeg.org/
 [3]: https://qpdf.sourceforge.io/
