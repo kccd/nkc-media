@@ -3,7 +3,7 @@ const {
   storeClient,
   getFileInfo,
   deleteFile,
-  spawnProcess,
+  createVideoCover,
 } = require('../../tools');
 const ff = require("fluent-ffmpeg");
 module.exports = async (props) => {
@@ -74,5 +74,5 @@ function videoToMP4(filePath, outputPath) {
 }
 
 function videoToCover(filePath, coverPath) {
-  return spawnProcess('ffmpeg',['-i',filePath, '-ss', '1', '-vframes' ,'1', '-y',coverPath])
+  return createVideoCover(filePath, coverPath);
 }

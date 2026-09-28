@@ -144,9 +144,9 @@ module.exports = async (props) => {
     })
 }
 
-// 获取视频的第一帧图片
-function videoFirstThumbTaker(videoPath,imgPath) {
-  return tools.spawnProcess('ffmpeg',['-i',videoPath, '-ss', '1', '-vframes' ,'1', '-y',imgPath])
+// 生成视频封面，长视频优先取第 1 秒，短视频取视频中点附近的画面
+function videoFirstThumbTaker(videoPath, imgPath) {
+  return tools.createVideoCover(videoPath, imgPath);
 }
 
 //获取视频的比特率
