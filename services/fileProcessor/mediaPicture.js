@@ -6,6 +6,9 @@ const { sendMessageToNkc } = require("../../socket");
 const os = platform();
 const linux = os === "linux";
 
+// 表情图片的最长边（像素）
+const STICKER_MAX_SIZE = 100;
+
 const PictureMaxSize = {
   lg: {
     width: 7680,
@@ -45,14 +48,15 @@ module.exports = async (props) => {
     minWidth,
     minHeight,
     transparency,
+    sticker = false,
   } = data;
   const filePath = file.path; //临时目录
   const time = new Date(toc).getTime();
 
   const filenamePath = `${originId}.${ext}`;
   const filesInfo = {}; //用于存储在数据库的文件类型
-  //构建原图存储地址
-  const path = PATH.join(originPath, timePath, filenamePath);
+  //构建原图存储地址；表情不保留原图，originPath 为空时不拼接（表情分支不使用该路径）
+  const path = originPath ? PATH.join(originPath, timePath, filenamePath) : "";
   const storeData = [
     {
       filePath: filePath,
@@ -89,6 +93,20 @@ module.exports = async (props) => {
   const func = async () => {
     //识别图片信息并自动旋转，去掉图片的元信息
     await tools.imageAutoOrient(filePath);
+
+    // 表情图片：等比压缩到表情尺寸，只产出 def，跳过 sm/md/lg、origin 与水印
+    if (sticker) {
+      await processStickerPicture({
+        filePath,
+        time,
+        normalStorePath,
+        normalFileName,
+        rid,
+        storeUrl,
+      });
+      return;
+    }
+
     //获取文件所在目录
     //获取图片尺寸
     const originFileInfo = await tools.getFileInfo(filePath, "picture");
@@ -253,6 +271,24 @@ module.exports = async (props) => {
         }
       }
     });
+};
+
+/*
+ * 表情图片处理：等比压缩到最长边 STICKER_MAX_SIZE，只产出 def
+ * 不生成 sm/md/lg、不生成 origin、不打水印
+ * */
+const processStickerPicture = async (props) => {
+  const { filePath, time, normalStorePath, normalFileName, rid, storeUrl } =
+    props;
+
+  // `>` 表示只缩不放且保持宽高比，避免把小图放大或把非方图拉伸
+  await imageNarrow(filePath, filePath, `${STICKER_MAX_SIZE}x${STICKER_MAX_SIZE}>`);
+  const info = await tools.getFileInfo(filePath, "picture");
+  info.name = normalFileName;
+  await storeClient(storeUrl, [{ filePath, path: normalStorePath, time }]);
+  const filesInfo = { def: info };
+  await sendMessageToNkc("resourceStatus", { rid, status: true, filesInfo });
+  return { filesInfo };
 };
 
 //图片打水印
