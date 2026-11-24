@@ -17,7 +17,13 @@ const {platform} = require("os");
 const os = platform();
 const linux = (os === 'linux');
 const {maxGetPageScale, maxGetPageCount} = require('../../configs').pdfPreview;
-const footerJPGBytes = fs.readFileSync(PATH.resolve(__dirname, `../../public/preview_footer.jpg`));
+// 注意：Node 22+/24 的 fs.readFileSync 读取小于 Buffer.poolSize/2 的文件时，返回的是共享 Buffer 池中的视图
+// （byteOffset 不为 0），而 pdf-lib 的 JpegEmbedder 用 new DataView(imageData.buffer) 解析、会忽略 byteOffset，
+// 直接从池首读取，导致 "SOI not found in JPEG"。这里复制到独立的 ArrayBuffer（byteOffset 恒为 0）。
+// 不能用 Buffer.from(...)，它仍会走 Buffer.allocUnsafe 被池化。
+const footerJPGBytes = new Uint8Array(
+  fs.readFileSync(PATH.resolve(__dirname, `../../public/preview_footer.jpg`))
+);
 
 module.exports = async (props) => {
   const {
